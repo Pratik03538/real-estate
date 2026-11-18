@@ -307,7 +307,6 @@ class App:
           ("id","city","prop","title","published","score","review"),
           ("ID","City","Property","Page title","Published","Intent","Review"),
           (45,80,90,440,140,75,190))
-        self.public_tree.pack(fill=BOTH, expand=True, pady=8)
         row = ttk.Frame(self.pub_tab); row.pack(fill=X)
         ttk.Button(row, text="Open source", command=self.open_source).pack(side=LEFT, padx=3)
         ttk.Button(row, text="Mark reviewed", command=self.mark_reviewed).pack(side=LEFT, padx=3)
@@ -315,7 +314,6 @@ class App:
           ("id","username","event","city","prop","budget","consent","review"),
           ("ID","IG handle","Event","City","Property","Budget","Permission","Review"),
           (45,150,170,80,100,100,180,180))
-        self.lead_tree.pack(fill=BOTH, expand=True, pady=8)
         row2 = ttk.Frame(self.lead_tab); row2.pack(fill=X)
         ttk.Button(row2, text="Refresh", command=self.refresh).pack(side=LEFT, padx=3)
         ttk.Button(row2, text="Export CSV", command=self.export_csv).pack(side=LEFT, padx=3)
