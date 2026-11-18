@@ -1,26 +1,46 @@
 # Instagram Real Estate Reel Finder
 
-A guided Python + Playwright tool for finding property-listing Reels around Pune, Karjat, Panshet, and Pawna Lake.
+A Python + Playwright tool for finding property-listing Reels around Pune, Karjat, Panshet, and Pawna Lake, with a small local CSV contact register.
 
-## How searches work
+## Current workflow
 
-- Location-specific hashtag searches open Instagram hashtag pages.
-- Caption keyword searches open Instagram keyword-search pages.
-- On keyword search pages, the script only clicks a Reels filter if it finds one in the main search-content area.
-- The script intentionally avoids clicking Instagram's global left-navigation Reels item, which opens the general recommendation feed.
-- If a safe search filter cannot be identified, choose the Reels category manually within the search results if Instagram shows one.
+1. Open Instagram in Google Chrome using a separate local browser profile.
+2. Sign in manually.
+3. Search location-specific property hashtags and keywords.
+4. Review results and open relevant property Reels manually.
+5. Read comments manually.
+6. When a buyer has explicitly invited contact for the enquiry or agreed to receive relevant property details, choose the save-contact option and enter the number.
+7. The tool validates the Indian mobile number, prevents duplicate numbers, and saves the contact to a local CSV file.
 
-## Important limitations
+## Contact dataset
 
-Instagram results are ranked and personalized. A hashtag or keyword search is not a complete index of all Reels and may show mixed content. The available search categories vary across accounts, devices, and interface versions.
+The local file is created at:
 
-Instagram search targets searchable text such as terms and hashtags. It cannot reliably find Reels based on instructions written only inside their comments. Review a relevant Reel's comments manually to check for phrases like "comment your number" or "drop your number".
+`data/buyers.csv`
 
-This project does not scrape captions/comments/profiles, collect phone numbers, build a lead database, like, follow, comment, message, post, or bypass access controls.
+It contains:
+- Phone number
+- Instagram username (optional)
+- Location
+- Source Reel URL
+- Contact-permission confirmation
+- Date/time recorded
 
-## Run on Windows
+The dataset is private to the local machine and `data/` is ignored by Git. Do not commit or upload buyer phone numbers, contact exports, cookies, browser sessions, or access tokens.
 
-From the repository folder:
+## Important limits
+
+- This project does not automatically read Instagram comments or extract phone numbers from other users' posts.
+- It does not scrape profiles, comments, or contact details.
+- It does not like, follow, comment, DM, or post.
+- It does not bypass login, access controls, or rate limits.
+- Instagram's search is personalized and may show mixed results. Search phrases and hashtags are discovery hints, not a complete index.
+
+Only record a buyer contact when you have permission to contact that person for the relevant enquiry. A number being visible in a comment does not automatically authorize unrelated marketing or repeated calls. Respect applicable platform terms and commercial communication rules.
+
+## Windows / PyCharm
+
+Run these commands from the repository folder:
 
 ```powershell
 git pull origin main
@@ -28,6 +48,4 @@ git pull origin main
 .\.venv\Scripts\python.exe src/main.py
 ```
 
-Sign in manually in Chrome if needed. The separate profile is stored under `browser-data/` and is ignored by Git.
-
-**Never upload `browser-data/`, cookies, session files, passwords, or access tokens to GitHub.**
+The separate Chrome profile is stored in `browser-data/` and is ignored by Git.
