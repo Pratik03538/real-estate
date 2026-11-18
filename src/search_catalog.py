@@ -1,33 +1,46 @@
-"""Search phrases for property-listing Reels in target Maharashtra locations."""
+"""Location-specific hashtags and caption keywords for property Reel discovery.
+
+Hashtags are discovery suggestions, not verified inventories. Instagram ranks
+and personalizes their results; some tags may have few or no matching posts.
+"""
 
 LOCATION_SEARCHES = {
     "Pune": [
-        "Pune real estate property",
-        "Pune property for sale",
-        "Pune plots land for sale",
-        "Pune farmhouse property",
+        "#punerealestate",
+        "#puneproperty",
+        "#puneflats",
+        "#punefarmhouse",
+        "#puneland",
+        "Pune plot for sale",
+        "Pune NA plot property",
         "Pune property comment your number",
-        "Pune property drop your number",
     ],
     "Karjat": [
-        "Karjat real estate property",
-        "Karjat plots land for sale",
+        "#karjatproperty",
+        "#karjatplots",
+        "#karjatfarmhouse",
+        "#karjatrealestate",
+        "#karjatland",
+        "Karjat plot for sale",
         "Karjat farmhouse property",
-        "Karjat property comment your number",
         "Karjat property drop your number",
     ],
     "Panshet": [
-        "Panshet real estate property",
-        "Panshet plots land for sale",
+        "#panshetproperty",
+        "#panshetplots",
+        "#panshetfarmhouse",
+        "#panshetland",
+        "Panshet land for sale",
         "Panshet farmhouse property",
         "Panshet property comment your number",
-        "Panshet property drop your number",
     ],
     "Pawna Lake": [
-        "Pawna Lake property for sale",
-        "Pawana Lake property for sale",
-        "Pawna Lake plots farmhouse",
-        "Pawna Lake property comment your number",
+        "#pawnalakeproperty",
+        "#pawnalakeplots",
+        "#pawnalakefarmhouse",
+        "#pawnalake",
+        "Pawna Lake plot for sale",
+        "Pawna Lake farmhouse property",
         "Pawna Lake property drop your number",
     ],
 }
