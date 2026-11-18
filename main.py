@@ -473,6 +473,7 @@ def main():
     load_env(); init_db()
     parser = argparse.ArgumentParser()
     parser.add_argument("--webhook", action="store_true", help="Run Meta webhook receiver")
+    parser.add_argument("--check-instagram", action="store_true", help="Verify Instagram Login token and connected professional account")
     args = parser.parse_args()
     if args.webhook:
         run_webhook()
