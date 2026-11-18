@@ -1,49 +1,33 @@
 # Instagram Real Estate Reel Finder
 
-A Python + Playwright project that opens Instagram keyword-search pages in Google Chrome for property-listing Reel discovery around Pune, Karjat, Panshet, and Pawna Lake.
+A guided Python + Playwright tool for finding property-listing Reels around Pune, Karjat, Panshet, and Pawna Lake.
 
-## Current features
+## How searches work
 
-- Opens Google Chrome using a separate persistent profile in `browser-data/`.
-- Lets you sign in manually.
-- Offers location choices: Pune, Karjat, Panshet, Pawna Lake, or all.
-- Searches property, plots, land, and farmhouse phrases.
-- Includes queries such as "comment your number" and "drop your number".
-- Attempts to select Instagram's visible Reels filter when the page exposes an exact Reels tab/button/link.
-- Opens one search at a time and waits for your confirmation before the next search.
+- Location-specific hashtag searches open Instagram hashtag pages.
+- Caption keyword searches open Instagram keyword-search pages.
+- On keyword search pages, the script only clicks a Reels filter if it finds one in the main search-content area.
+- The script intentionally avoids clicking Instagram's global left-navigation Reels item, which opens the general recommendation feed.
+- If a safe search filter cannot be identified, choose the Reels category manually within the search results if Instagram shows one.
 
-## What it does not do
+## Important limitations
 
-- It does not scrape Instagram pages, captions, comments, or profiles.
-- It does not extract, save, or compile phone numbers or lead databases.
-- It does not like, follow, comment, message, or post.
-- It does not bypass login, private accounts, rate limits, or access controls.
+Instagram results are ranked and personalized. A hashtag or keyword search is not a complete index of all Reels and may show mixed content. The available search categories vary across accounts, devices, and interface versions.
 
-Instagram search results vary by account, region, login state, and UI version. A keyword search may show mixed content; manually select the Reels category if Instagram does not expose it automatically, then open only relevant property-listing Reels yourself. Search phrases are discovery hints, not a guarantee that every result matches.
+Instagram search targets searchable text such as terms and hashtags. It cannot reliably find Reels based on instructions written only inside their comments. Review a relevant Reel's comments manually to check for phrases like "comment your number" or "drop your number".
 
-## Windows / PyCharm setup
+This project does not scrape captions/comments/profiles, collect phone numbers, build a lead database, like, follow, comment, message, post, or bypass access controls.
+
+## Run on Windows
 
 From the repository folder:
 
 ```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
+git pull origin main
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe src/main.py
 ```
 
-Sign in manually in the Chrome window if Instagram asks. The separate browser profile is stored locally and ignored by Git.
+Sign in manually in Chrome if needed. The separate profile is stored under `browser-data/` and is ignored by Git.
 
-**Do not upload `browser-data/`, cookies, session files, passwords, or access tokens to GitHub.**
-
-## Project structure
-
-```text
-real-estate/
-├── .gitignore
-├── README.md
-├── requirements.txt
-└── src/
-    ├── main.py
-    └── search_catalog.py
-```
+**Never upload `browser-data/`, cookies, session files, passwords, or access tokens to GitHub.**
