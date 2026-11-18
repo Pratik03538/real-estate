@@ -132,6 +132,28 @@ def exa_search(api_key, query, count):
         raise RuntimeError(f"Network error: {exc.reason}") from exc
 
 
+
+def instagram_profile():
+    """Verify the token and retrieve the connected Instagram professional account."""
+    token = os.getenv("INSTAGRAM_ACCESS_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError("INSTAGRAM_ACCESS_TOKEN is missing in your local .env file.")
+    version = os.getenv("META_API_VERSION", "v27.0").strip()
+    url = f"https://graph.instagram.com/{version}/me?fields=user_id,username"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"}, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            profile = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Instagram API HTTP {exc.code}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Instagram network error: {exc.reason}") from exc
+    if not profile.get("username"):
+        raise RuntimeError(f"Unexpected Instagram profile response: {profile}")
+    return profile
+
+
 def store_public_results(city, prop, results):
     saved = duplicates = filtered = 0
     with sqlite3.connect(DB_PATH) as con:
@@ -180,9 +202,13 @@ def save_inbound(text, sender_id, username, event_type, media_id, event_hash):
     text = text or ""
     prop = infer_type(text)
     score = buyer_score(text)
-    # Include a property-specific inbound enquiry even if wording is short, e.g. "2BHK Pune?"
-    if score == 0 and not prop:
-        return "not_a_property_lead"
+    # Require buyer intent; a bare mention of a flat or plot is not a lead.
+    if score == 0:
+        short_interest = ("interested in", "send details", "need details", "price details", "what is the price", "site visit", "looking", "need", "want to buy", "want to purchase", "required", "chahiye", "purchase")
+        if not prop or not any(term in text.lower() for term in short_interest):
+            return "not_a_property_lead"
+        if any(term in text.lower() for term in SELLER_TERMS):
+            return "not_a_property_lead"
     consent = explicit_consent(text)
     phone_match = PHONE_RE.search(text) if consent else None
     phone = phone_match.group(0) if phone_match else None
@@ -288,6 +314,7 @@ class App:
         head = ttk.Frame(self.root, padding=12); head.pack(fill=X)
         ttk.Label(head, text="PROPERTY BUYER INTELLIGENCE", font=("Segoe UI", 17, "bold")).pack(side=LEFT)
         ttk.Button(head, text="Set Exa API Key", command=self.set_key).pack(side="right")
+        ttk.Button(head, text="Check Instagram Account", command=self.check_instagram).pack(side="right", padx=6)
         tabs = ttk.Notebook(self.root); tabs.pack(fill=BOTH, expand=True, padx=10, pady=5)
         self.pub_tab = ttk.Frame(tabs, padding=10); self.lead_tab = ttk.Frame(tabs, padding=10)
         tabs.add(self.pub_tab, text="Public Instagram Discovery")
@@ -335,6 +362,34 @@ class App:
         if key and key.strip():
             self.api_key = key.strip()
             self.status.set("Key is held in memory only; it is not saved to GitHub or the database.")
+
+    def check_instagram(self):
+        load_env()
+        if not os.getenv("INSTAGRAM_ACCESS_TOKEN", "").strip():
+            messagebox.showinfo(
+                "Instagram not connected",
+                "Create a professional Instagram account and Meta Developer app, generate an Instagram Login token, then add it to your local .env as INSTAGRAM_ACCESS_TOKEN."
+            )
+            return
+        self.status.set("Checking Instagram professional account connection...")
+        threading.Thread(target=self._check_instagram_worker, daemon=True).start()
+
+    def _check_instagram_worker(self):
+        try:
+            profile = instagram_profile()
+            username = profile.get("username", "connected")
+            user_id = profile.get("user_id") or profile.get("id") or ""
+            self.root.after(0, lambda: self._instagram_connected(username, user_id))
+        except Exception as exc:
+            self.root.after(0, lambda error=str(exc): self._instagram_connection_error(error))
+
+    def _instagram_connected(self, username, user_id):
+        self.status.set("Instagram connected: @" + username + " | account ID: " + str(user_id))
+        messagebox.showinfo("Instagram connected", "Connected professional account: @" + username + "\nAccount ID: " + str(user_id))
+
+    def _instagram_connection_error(self, error):
+        self.status.set("Instagram connection check failed.")
+        messagebox.showerror("Instagram API error", error)
 
     def search(self):
         if not self.api_key: self.set_key()
@@ -421,6 +476,8 @@ def main():
     args = parser.parse_args()
     if args.webhook:
         run_webhook()
+    elif args.check_instagram:
+        print(json.dumps(instagram_profile(), indent=2))
     else:
         root = Tk(); App(root); root.mainloop()
 
