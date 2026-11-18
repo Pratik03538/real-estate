@@ -7,8 +7,9 @@ __pycache__/
 venv/
 env/
 
-# Local browser profile and session data
+# Local browser profile, sessions, and buyer contact dataset
 browser-data/
+data/
 playwright/.auth/
 auth/
 
