@@ -1,9 +1,24 @@
-.env
-*.sqlite3
-*.db
+# Python
 __pycache__/
 *.py[cod]
+*.pyd
+.Python
 .venv/
 venv/
+env/
+
+# Local browser profile and session data
+browser-data/
+playwright/.auth/
+auth/
+
+# Local environment and IDE files
+.env
 .idea/
-.DS_Store
+.vscode/
+
+# Test / build output
+.pytest_cache/
+htmlcov/
+dist/
+build/
