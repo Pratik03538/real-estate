@@ -1,8 +1,8 @@
 """Location-focused Instagram Reel discovery for real-estate listings.
 
-Searches location-specific hashtags and caption keywords. It never clicks
-Instagram's global Reels navigation item as a substitute for a search filter.
-A person manually reviews Reels and comments; no scraping or lead extraction.
+Searches location-specific hashtags and caption keywords. A person manually
+reviews Reels/comments and enters an authorized contact into the local CSV.
+No automated comment scraping, phone extraction, likes, follows, or DMs.
 """
 
 from pathlib import Path
@@ -12,6 +12,7 @@ import re
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
 
+from contact_store import prompt_and_save_contact
 from search_catalog import LOCATION_SEARCHES
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -47,12 +48,15 @@ def choose_location() -> list[str]:
         print("Invalid choice. Please enter one of the menu numbers.")
 
 
-def safe_click_search_reels_filter(page) -> bool:
-    """Click Reels only when it appears inside the search content area.
+def location_for_term(term: str) -> str:
+    for location, terms in LOCATION_SEARCHES.items():
+        if term in terms:
+            return location
+    return "Multiple locations"
 
-    Instagram also has a global left-navigation item named 'Reels'. That
-    global navigation link opens the recommendation feed, so it is rejected.
-    """
+
+def safe_click_search_reels_filter(page) -> bool:
+    """Click Reels only when it appears inside the search content area."""
     for role in ("tab", "button", "link"):
         candidates = page.get_by_role(
             role,
@@ -68,8 +72,7 @@ def safe_click_search_reels_filter(page) -> bool:
                 if not bounds:
                     continue
 
-                # Instagram's global left navigation is on the far left.
-                # A search result category should be in the main content area.
+                # Do not click Instagram's global left-navigation Reels item.
                 if bounds["x"] >= 250 and bounds["y"] >= 80:
                     matches.append(item)
 
@@ -85,7 +88,6 @@ def safe_click_search_reels_filter(page) -> bool:
 
 
 def build_search_url(term: str) -> tuple[str, bool]:
-    """Return (URL, is_hashtag_search)."""
     cleaned = term.strip()
     if cleaned.startswith("#"):
         tag = cleaned[1:].replace(" ", "")
@@ -100,34 +102,34 @@ def open_search(page, term: str, index: int, total: int) -> None:
     print(f"Opening: {search_url}")
 
     try:
-        page.goto(
-            search_url,
-            wait_until="domcontentloaded",
-            timeout=60_000,
-        )
+        page.goto(search_url, wait_until="domcontentloaded", timeout=60_000)
         page.wait_for_timeout(2_500)
     except PlaywrightError as exc:
         print(f"Search page did not finish loading: {exc}")
 
     if is_hashtag:
+        print("Hashtag results opened. Review them and open relevant property Reels.")
+    elif not safe_click_search_reels_filter(page):
         print(
-            "Hashtag results opened. Review the location-specific results. "
-            "Open only property-listing Reels."
+            "A safe Reels search filter was not found. The global Reels "
+            "navigation was NOT clicked. Choose the Reels category manually "
+            "within search results if Instagram shows it."
         )
-    else:
-        if not safe_click_search_reels_filter(page):
-            print(
-                "A safe Reels search filter was not found. "
-                "The global Reels navigation was intentionally NOT clicked. "
-                "In Instagram's search results, manually choose the Reels "
-                "category if it appears."
-            )
 
     print(
-        "\nCheck the Reel itself for a property listing in this location. "
-        "Then inspect its comments manually for phrases such as "
-        "'comment your number' or 'drop your number'."
+        "\nIn Chrome, open a relevant property Reel and review its comments. "
+        "The program does not read or scrape comments automatically."
     )
+
+
+def review_and_save_contacts(location: str) -> None:
+    while input(
+        "\nDid you find a buyer who invited contact for this enquiry? "
+        "Save their contact? (y/n): "
+    ).strip().lower() in {"y", "yes"}:
+        prompt_and_save_contact(location)
+        if input("Save another buyer from this location? (y/n): ").strip().lower() not in {"y", "yes"}:
+            break
 
 
 def main() -> None:
@@ -152,15 +154,9 @@ def main() -> None:
 
         try:
             page = context.pages[0] if context.pages else context.new_page()
-            page.goto(
-                INSTAGRAM_URL,
-                wait_until="domcontentloaded",
-                timeout=60_000,
-            )
+            page.goto(INSTAGRAM_URL, wait_until="domcontentloaded", timeout=60_000)
             print("\nInstagram is open.")
-            input(
-                "Sign in manually if Instagram asks, then press Enter here..."
-            )
+            input("Sign in manually if Instagram asks, then press Enter here...")
 
             while True:
                 terms = choose_location()
@@ -170,9 +166,18 @@ def main() -> None:
                 print(f"\n{len(terms)} targeted searches queued.")
                 for index, term in enumerate(terms, start=1):
                     open_search(page, term, index, len(terms))
+
                     action = input(
-                        "\nPress Enter for next search, or type q to stop: "
+                        "\nAfter reviewing this search in Chrome, press Enter "
+                        "to continue, type s to save a buyer contact, or q to stop: "
                     ).strip().lower()
+
+                    if action == "s":
+                        review_and_save_contacts(location_for_term(term))
+                        action = input(
+                            "Press Enter for next search or q to stop: "
+                        ).strip().lower()
+
                     if action == "q":
                         break
 
