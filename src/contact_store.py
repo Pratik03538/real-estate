@@ -98,7 +98,7 @@ def prompt_and_save_contact(location: str) -> bool:
     file_exists = CONTACTS_FILE.exists()
 
     try:
-        with CONTACTS_FILE.open("a", newline="", encoding="utf-8-sig") as handle:
+        with CONTACTS_FILE.open("a", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=FIELDNAMES)
             if not file_exists or CONTACTS_FILE.stat().st_size == 0:
                 writer.writeheader()
